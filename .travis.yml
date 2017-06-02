@@ -1,0 +1,22 @@
+language: python
+python:
+  - "2.7"
+sudo: required
+services:
+  - docker
+
+before_install:
+  - sudo service mysql stop
+
+install:
+  - pip install -r requirements.txt
+  - docker pull mysql
+  - docker pull alpine
+
+jobs:
+  include:
+    - stage: test
+      script: nosetests -v tests
+    - stage: integration-test
+      script: nosetests -v it.tests
+      only: [master]

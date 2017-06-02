@@ -5,82 +5,80 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class DockerArgs(object):
+class DwArg(object):
     """
-    Docker Args class for parsing input args of decorator.
+    Decorator wrapper arguments.
     """
 
-    def __init__(self, inputs, props):
-        self._inputs = inputs
-        self._props = props
-
-    def test(self):
-        """
-        Test input arguments
-
-        TODO : This should throw exceptions.
-        """
-        return self._inputs
+    def __init__(self, argtype=None, mandatory=False, default=None, alternatives=list()):
+        self.argtype = argtype
+        self.mandatory = mandatory
+        self.default = default
+        self.alternatives = alternatives
 
 
-class DockerContainer(object):
+class DecWrapper(object):
     """
-    Docker container class. This class will start a new container and shutdown it.
-
-
+    Decorator wrapper class for parsing inputs args of any type of decorator.
     """
-    _container = None
-    _props = {
-        'image': (str, True),
-        'bindings': ([(str, str)], True),
-        'wait_for_logs': ([str], False),
-        'wait_for_port': ([list], False),
-        'signal': (int, False),
+
+    _global_props = {
+        'inject_arg': DwArg(argtype=bool, default=False),
     }
 
-    def __init__(self, **kwargs):
-        """
-        Class constructor to start and shutdown a container.
-        """
-        params = DockerArgs(kwargs, self._props).test()
-        self._client = docker.from_env()
-        self._image = params.get('image', 'mysql')
-        self._wait_log = params.get('wait_for_log')
+    def __init__(self, name, inputs, props):
+        self._inputs = self._check_inputs(name, inputs, props)
+        self.inject_arg = self.p('inject_arg')
 
-    def start(self):
+    @staticmethod
+    def _is_type(value, value_type):
+        if isinstance(value_type, type):
+            return isinstance(value, value_type)
+
+        if isinstance(value_type, list) and isinstance(value, list):
+            if len(value_type) != 1:
+                raise SyntaxError('Cannot list containing multiple type')
+            return all(DecWrapper._is_type(item, value_type[0]) for item in value)
+
+        if isinstance(value_type, tuple) and len(value) == len(value_type):
+            return all(DecWrapper._is_type(value[i], value_type[i]) for i in range(len(value)))
+
+        return False
+
+    def _check_inputs(self, name, inputs, wrapper_props):
         """
-        Start a containers and wait for it.
+        Test input arguments
         """
-        logger.debug('[%s] image is starting ...', self._image)
+        props = dict(self._global_props)
+        props.update(wrapper_props)
+        target_inputs = dict()
 
-        self._container = self._client.containers.run(
-            image=self._image,
-            detach=True,
-            environment={
-                'MYSQL_ROOT_PASSWORD': 'test'
-            },
-        )
+        for key, val in inputs.iteritems():
+            if key not in props:
+                raise SyntaxError('%s : Option \'%s\' doesn\'t not exist.' % (name, key))
+            prop = props[key]
 
-        logger.debug('[%s] container start with id : %s', self._image, self._container.id)
-        self._wait_for_log()
+            alt_func = next((alt[1] for alt in prop.alternatives if DecWrapper._is_type(val, alt[0])), None)
+            val = alt_func(val) if alt_func else val
 
-        logger.debug('[%s] container is ready (id=%s)', self._image, self._container.id)
-        return self._container
+            argtype = prop.argtype
+            if not DecWrapper._is_type(val, argtype):
+                raise TypeError(
+                    '%s : Option \'%s\' bad type. Expected \'%s\'. Got \'%s\' instead.' %
+                    (name, key, argtype.__name__, type(val).__name__)
+                )
 
-    def shutdown(self):
-        """
-        Shutdown the container when exiting the decorator.
-        """
-        try:
-            logger.debug('[%s] Stopping container with id : %s', self._image, self._container.id)
-            self._container.stop(timeout=5)
-        except Exception as e:
-            raise RuntimeError('[%s] Unable to stop container %s ' % (self._image, self._container.id), e)
+            target_inputs[key] = val
 
-    def _wait_for_log(self):
-        if self._wait_log:
-            for docker_log in self._container.logs(stream=True):
-                docker_log = docker_log.rstrip()
-                logger.debug('[%s - log][%s]', self._image, docker_log)
-                if self._wait_log in docker_log:
-                    break
+        all_defaults = [(key, val.default) for key, val in props.iteritems() if val.default is not None]
+        other_defaults = [(key, val) for key, val in all_defaults if key not in target_inputs]
+        target_inputs.update(other_defaults)
+
+        logger.debug('Input args : %s', target_inputs)
+        return target_inputs
+
+    def param(self, item):
+        return self._inputs.get(item)
+
+    def p(self, item):
+        return self.param(item)
