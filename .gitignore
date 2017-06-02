@@ -1,0 +1,13 @@
+# IDE & Virtualenv
+.idea/
+.venv/
+.cache/
+*.pyc
+
+## Test coverage
+cover/
+.coverage
+coverage.xml
+
+
+# Distribution / packaging
