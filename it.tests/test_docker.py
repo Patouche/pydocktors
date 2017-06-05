@@ -39,10 +39,28 @@ def alpine(func):
         'MYSQL_DATABASE': 'testdb'
     },
     wait_for_log='mysqld: ready for connections',
+    kill_signal=signal.SIGKILL,
+)
+def mysql_container_for_log(container, func):
+    return func(container)
+
+
+@docktors.docker(
+    inject_arg=True,
+    image='mysql',
+    ports={
+        '3306/tcp': 3306
+    },
+    environment={
+        'MYSQL_ROOT_PASSWORD': 'root',
+        'MYSQL_USER': 'user',
+        'MYSQL_PASSWORD': 'pwd',
+        'MYSQL_DATABASE': 'testdb'
+    },
     wait_for_port=3306,
     kill_signal=signal.SIGKILL,
 )
-def mysql_container(container, func):
+def mysql_container_for_port(container, func):
     return func(container)
 
 
@@ -80,16 +98,38 @@ class DockerTest(unittest.TestCase):
         # THEN
         self.assertTrue(output, 'Container "mysql" should be up and running')
 
+    def test_container_wait_for_log(self):
+        # GIVEN
+        def _mysql_query(container):
+            return container is not None
+
+        # WHEN
+        output = mysql_container_for_log(_mysql_query)
+
+        # THEN
+        self.assertTrue(output, 'Should wait until log is in outputs')
+
+    def test_container_wait_for_port(self):
+        # GIVEN
+        def _mysql_query(container):
+            return container is not None
+
+        # WHEN
+        output = mysql_container_for_port(_mysql_query)
+
+        # THEN
+        self.assertTrue(output, 'Should wait until port is open')
+
     def test_container_injection_at_first(self):
         # GIVEN
         def _mysql_query(container):
             return container is not None
 
         # WHEN
-        output = mysql_container(_mysql_query)
+        output = mysql_container_for_log(_mysql_query)
 
         # THEN
-        self.assertTrue(output, 'Container should be defined')
+        self.assertTrue(output, 'Check container has been injected')
 
 
 if __name__ == '__main__':

@@ -4,19 +4,24 @@ python:
 sudo: required
 services:
   - docker
-
-before_install:
-  - sudo service mysql stop
-
-install:
-  - pip install -r requirements.txt
-  - docker pull mysql
-  - docker pull alpine
-
 jobs:
   include:
     - stage: test
-      script: nosetests -v tests
+      install:
+        - pip install -qr requirements.txt
+        - pip install -qr tests/requirements.txt
+        - pip install -q codecov
+      script:
+        - nosetests -v tests --with-coverage --cover-package docktors
+      after_success:
+        - codecov
     - stage: integration-test
+      before_install:
+        - sudo service mysql stop
+      install:
+        - pip install -qr requirements.txt
+        - pip install -qr it.tests/requirements.txt
+        - docker pull mysql
+        - docker pull alpine
       script: nosetests -v it.tests
       only: [master]

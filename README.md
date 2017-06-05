@@ -20,6 +20,6 @@ You can use it anywhere you want in your python code ! This include test and cod
 
 ### Why this name ?
 
-Because it the contraction of 3 famous words : `python`, `docker` and `decorators`
+Because it's the contraction of 3 famous words : `python`, `docker` and `decorators`
 
 LICENSE : MIT

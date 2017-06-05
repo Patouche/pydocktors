@@ -15,7 +15,7 @@ class TestDecWrapper(unittest.TestCase):
             DecWrapper('Test', inputs, props)
 
         # THEN
-        self.assertEqual(cm.exception.message, "Test : Option 'undefined_prop' doesn't not exist.")
+        self.assertEqual(cm.exception.message, "[Test] : Option 'undefined_prop' doesn't not exist.")
 
     def test__check_inputs_bad_int_type(self):
         # GIVEN
@@ -27,7 +27,7 @@ class TestDecWrapper(unittest.TestCase):
             DecWrapper('Test', inputs, props)
 
         # THEN
-        self.assertEqual(cm.exception.message, "Test : Option 'int_prop' bad type. Expected 'int'. Got 'str' instead.")
+        self.assertEqual(cm.exception.message, "[Test] : Option 'int_prop' bad type. Expected 'int'. Got 'str' instead.")
 
     def test__check_inputs_ok_int_type(self):
         # GIVEN
@@ -81,7 +81,7 @@ class TestDecWrapper(unittest.TestCase):
         # THEN
         self.assertEqual(
             cm.exception.message,
-            "Test : Option 'dict_prop' bad type. Expected 'dict'. Got 'list' instead."
+            "[Test] : Option 'dict_prop' bad type. Expected 'dict'. Got 'list' instead."
         )
 
     def test__check_inputs_ok_dict_using_alternative(self):

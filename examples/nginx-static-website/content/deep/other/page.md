@@ -1,0 +1,3 @@
+# Other page
+
+[back](../..)
