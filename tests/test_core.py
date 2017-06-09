@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-from docktors.core import DecWrapper, DwArg
+import mock
+
+from docktors.core import DecWrapper, DwArg, decorated
 
 
 class TestDecWrapper(unittest.TestCase):
@@ -27,7 +29,8 @@ class TestDecWrapper(unittest.TestCase):
             DecWrapper('Test', inputs, props)
 
         # THEN
-        self.assertEqual(cm.exception.message, "[Test] : Option 'int_prop' bad type. Expected 'int'. Got 'str' instead.")
+        self.assertEqual(cm.exception.message,
+                         "[Test] : Option 'int_prop' bad type. Expected 'int'. Got 'str' instead.")
 
     def test__check_inputs_ok_int_type(self):
         # GIVEN
@@ -113,6 +116,77 @@ class TestDecWrapper(unittest.TestCase):
 
         # THEN
         self.assertEqual(wrapper.p('int_prop'), 1)
+
+
+def dec_function(name):
+    return 'Hello %s' % name
+
+
+def dec_function_arg(*args):
+    return args
+
+
+def dec_function_error():
+    raise StandardError('Error for test')
+
+
+class TestDecorated(unittest.TestCase):
+    """Test the decorated function"""
+
+    def test_decorated_output(self):
+        # GIVEN
+        wrapping_mock = mock.Mock(spec=DecWrapper)
+
+        # WHEN
+        output = decorated(wrapping=wrapping_mock, func=dec_function)
+
+        # THEN
+        self.assertIsNotNone(output, msg='Output should not be none')
+        self.assertEqual(output.func_name, 'dec_function', msg='Returned function shoud have the same name')
+
+    def test_decorated_without_argument_injection(self):
+        # GIVEN
+        wrapping_mock = mock.Mock(spec=DecWrapper)
+        wrapping_mock.inject_arg = False
+
+        # WHEN
+        output = decorated(wrapping=wrapping_mock, func=dec_function)('World')
+
+        # THEN
+        self.assertEqual(output, 'Hello World', 'Function output should not change')
+        wrapping_mock.start.assert_called_once_with()
+        wrapping_mock.shutdown.assert_called_once_with()
+
+    def test_decorated_with_argument_injection(self):
+        # GIVEN
+        wrapping_mock = mock.Mock(spec=DecWrapper)
+        wrapping_mock.inject_arg = True
+        wrapping_mock.get_args.return_value = ['First arg']
+
+        # WHEN
+        output = decorated(wrapping=wrapping_mock, func=dec_function_arg)('Hello World')
+
+        # THEN
+        self.assertIsInstance(output, tuple, 'Should retrieve function arguments')
+        self.assertEqual(output[0], 'First arg', 'Function first output should be the wrapping args')
+        self.assertEqual(output[1], 'Hello World', 'Function second output should be the argument parameter')
+        wrapping_mock.start.assert_called_once_with()
+        wrapping_mock.shutdown.assert_called_once_with()
+
+    def test_decorated_exception_raised(self):
+        # GIVEN
+        wrapping_mock = mock.Mock(spec=DecWrapper)
+        wrapping_mock.inject_arg = False
+
+        # WHEN
+        f = decorated(wrapping=wrapping_mock, func=dec_function_error)
+        with self.assertRaises(StandardError) as cm:
+            f()
+
+        # THEN
+        self.assertEqual(cm.exception.message, 'Error for test', 'Should be the error raise')
+        wrapping_mock.start.assert_called_once_with()
+        wrapping_mock.shutdown.assert_called_once_with()
 
 
 if __name__ == '__main__':

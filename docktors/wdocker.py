@@ -59,6 +59,9 @@ class DockerContainer(DecWrapper):
             props=DOCKER_CONTAINER_PROPS
         )
 
+    def get_args(self):
+        return [self._container]
+
     def start(self):
         """
         Start a containers and wait for it.

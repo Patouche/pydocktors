@@ -1,8 +1,37 @@
 # -*- coding: utf-8 -*-
-import docker
 import logging
 
+import functools
+
 logger = logging.getLogger(__name__)
+
+
+def decorated(wrapping, func):
+    """
+    Decorate a function with a wrapping class.
+
+    :param wrapping: the wrapping class use to decorate the function
+    :param func: the function to decorate
+    :return: the decorated function
+    """
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        w_name, f_name = wrapping.__class__.__name__, func.__name__
+        logger.debug('[%s] Starting before \'%s\' function', w_name, f_name)
+        wrapping.start()
+        try:
+            logger.debug('[%s] Executing \'%s\' function', w_name, f_name)
+            func_args = tuple(wrapping.get_args()) + args if wrapping.inject_arg else args
+            return func(*func_args, **kwargs)
+        except Exception as e:
+            logger.error('[%s] Error in \'%s\' function : %s', w_name, f_name, e.message)
+            raise e
+        finally:
+            logger.debug('[%s] Shutdown after \'%s\' function', w_name, f_name)
+            wrapping.shutdown()
+
+    return wrapper
 
 
 class DwArg(object):
@@ -44,6 +73,15 @@ class DecWrapper(object):
             return all(DecWrapper._is_type(name, value[i], value_type[i]) for i in range(len(value)))
 
         return False
+
+    def start(self):
+        raise NotImplementedError("Abstract method should be implemented")
+
+    def get_args(self):
+        raise NotImplementedError("Abstract method should be implemented")
+
+    def shutdown(self):
+        raise NotImplementedError("Abstract method should be implemented")
 
     def _check_inputs(self, name, inputs, wrapper_props):
         """

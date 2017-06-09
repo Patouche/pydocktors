@@ -70,10 +70,10 @@ def generate_site(path):
     volumes=[(TARGET_DIR, '/usr/share/nginx/html', 'ro')],
     wait_for_port=8080,
 )
-def main(docker):
+def main(container):
     while True:
         logger.info('Nginx container with id %s is %s. Open in your browser http://localhost:8080/',
-                    docker.container.id, docker.container.status)
+                    container.id, container.status)
         generate_site(path='.')
         time.sleep(5)
 
