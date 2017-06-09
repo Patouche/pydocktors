@@ -1,27 +1,38 @@
 language: python
 python:
-  - "2.7"
+  - '2.7'
 sudo: required
-services:
-  - docker
+services: [docker]
+env:
+  global:
+    - secure: GfPa65tdtPAkn/H8Y/ymfQzye5d52HD58j2IV8ZvwA6DtRIP1DNyKW+uET0Qep/voMKnuroQoOE4i24eC+AizqDVfeyTttBKF0OmItXKov6f9CX3hC2xf6x89eqvuHpYvI3PC4ntxoENPeGGtmr8L4Fg7F3+ouZ5Lk20KlmUcCrqs7ZzP6MlTfhXQxvHiO14IcDWD7jd7e8bh7Xc9gM8i1D1bPcIa2QEWwXiNX8BBaPHukA1GOlbj3siV0yPXzvsPc9X/ZpS7zi3lTnYgK3GThKQ31s52cy7E/ogxahcN3dicRw6Yl11spS8K3tw6/aEsKhIKotJRJ8QMzJKEQVZjVHBs2L9hmqocHxy7JgLVp3hWNkQbBnPJG8+NyXj21YfJ9GH6sbuvN5wkqlQijoQRTJAWzew+C7nh1E0sjHdQAkc9l5S9rD5SZEzXmPlf+wsmSx91xk6cO9WUQTFlebs1D9lc323Y8vZ/kY+JVopE7GNtkxnmKru3gjm0QQ9Lo/J7H6XQ23KsheqMQg8LM5kiV6gQlbyX+hmZ3T6SHQCQcHrUgZr030Fqc/te5eVnwGn9uP4FBgifEdhy027k9rR1rJ8nim8ovjlyZocyNweR2F8O7ZezeD5Hz7PqaLpVB4ZMM+hxWaX+yT14hIcaTilZQQN6Ov5sxcTHTcnzrms4dQ=
+
 jobs:
   include:
-    - stage: test
-      install:
-        - pip install -qr requirements.txt
-        - pip install -qr tests/requirements.txt
-        - pip install -q codecov
-      script:
-        - nosetests -v tests --with-coverage --cover-package docktors
-      after_success:
-        - codecov
-    - stage: integration-test
-      before_install:
-        - sudo service mysql stop
-      install:
-        - pip install -qr requirements.txt
-        - pip install -qr it.tests/requirements.txt
-        - docker pull mysql
-        - docker pull alpine
-      script: nosetests -v it.tests
-      only: [master]
+  - stage: test
+    install:
+      - pip install -qr requirements.txt
+      - pip install -qr tests/requirements.txt
+      - pip install -q codecov
+    script:
+      - nosetests -v tests --with-coverage --cover-package docktors
+      - pycodestyle --config .pycodestyle docktors it.tests tests
+      - flake8 --config .pycodestyle docktors it.tests tests
+    after_success: codecov
+  - stage: integration-test
+    only: [master, developpment]
+    before_install: sudo service mysql stop
+    install:
+      - pip install -qr requirements.txt
+      - pip install -qr it.tests/requirements.txt
+      - docker pull mysql
+      - docker pull alpine
+    script: nosetests -v it.tests
+    deploy:
+      provider: pypi
+      server: https://testpypi.python.org/pypi
+      user: Patouche
+      password:
+        secure: $PYPI_PASSWORD
+      on:
+        branch: developpment

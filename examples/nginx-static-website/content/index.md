@@ -2,7 +2,7 @@
 
 Sample page
 
-[Link sample](./deep/other/page.html)
+[Link sample](./deep/other/page.md)
 
 ## Markdown improved !!
 

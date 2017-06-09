@@ -2,9 +2,6 @@ import unittest
 import docker
 import logging
 import signal
-import _mysql
-
-import sys
 
 import docktors
 

@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 import socket
-
 import docker
 import logging
-
 import time
-
-import errno
-
 from .core import DecWrapper, DwArg
 
 logger = logging.getLogger(__name__)

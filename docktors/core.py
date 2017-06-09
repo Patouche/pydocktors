@@ -91,27 +91,27 @@ class DecWrapper(object):
         props.update(wrapper_props)
         target_inputs = dict()
 
-        for key, val in inputs.iteritems():
+        for key, value in inputs.iteritems():
             if key not in props:
                 raise SyntaxError("[{name}] : Option '{key}' doesn't not exist.".format(name=name, key=key))
             prop = props[key]
 
-            alt_func = next((alt[1] for alt in prop.alternatives if DecWrapper._is_type(name, val, alt[0])), None)
-            val = alt_func(val) if alt_func else val
+            alt_func = next((alt[1] for alt in prop.alternatives if DecWrapper._is_type(name, value, alt[0])), None)
+            target_value = alt_func(value) if alt_func else value
 
             argtype = prop.argtype
-            if not DecWrapper._is_type(name, val, argtype):
+            if not DecWrapper._is_type(name, target_value, argtype):
                 raise TypeError("[{name}] : Option '{key}' bad type. Expected '{arg}'. Got '{got}' instead.".format(
                     name=name,
                     key=key,
                     arg=argtype.__name__,
-                    got=type(val).__name__
+                    got=type(target_value).__name__
                 ))
 
-            target_inputs[key] = val
+            target_inputs[key] = target_value
 
-        all_defaults = [(key, val.default) for key, val in props.iteritems() if val.default is not None]
-        other_defaults = [(key, val) for key, val in all_defaults if key not in target_inputs]
+        all_defaults = [(key, value.default) for key, value in props.iteritems() if value.default is not None]
+        other_defaults = [(key, value) for key, value in all_defaults if key not in target_inputs]
         target_inputs.update(other_defaults)
 
         logger.debug('[%s] Input args : %s', name, target_inputs)
