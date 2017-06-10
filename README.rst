@@ -2,9 +2,9 @@
 pydocktors
 ==========
 
-.. image:: https://travis-ci.org/Patouche/pydocktors.svg?branch=master
+.. image:: https://travis-ci.org/Patouche/pydocktors.svg?branch=developpment
     :target: https://travis-ci.org/Patouche/pydocktors
-.. image:: https://codecov.io/gh/Patouche/pydocktors/branch/master/graph/badge.svg
+.. image:: https://codecov.io/gh/Patouche/pydocktors/branch/developpment/graph/badge.svg
     :target: https://codecov.io/gh/Patouche/pydocktors
 .. image:: https://img.shields.io/pypi/v/pydocktors.svg
     :target: https://pypi.python.org/pypi/pydocktors
