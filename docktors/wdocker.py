@@ -14,7 +14,7 @@ DOCKER_CONTAINER_PROPS = {
         argtype=dict,
         default=dict(),
         alternatives=[
-            ([(int, int)], lambda (v): dict(i for i in v))
+            ([(int, int)], lambda v: dict(i for i in v))
         ]
     ),
     'volumes': DwArg(
@@ -28,7 +28,7 @@ DOCKER_CONTAINER_PROPS = {
         argtype=dict,
         default=dict(),
         alternatives=[
-            ([(str, str)], lambda (v): dict(i for i in v))
+            ([(str, str)], lambda v: dict(i for i in v))
         ]
     ),
     'wait_for_log': DwArg(argtype=str),
@@ -105,7 +105,7 @@ class DockerContainer(DecWrapper):
             for docker_log in self._container.logs(stream=True):
                 docker_log = docker_log.rstrip()
                 logger.debug('[%s - log][%s]', image, docker_log)
-                if wait_log in docker_log:
+                if wait_log in docker_log.decode('utf-8'):
                     break
             logger.debug('[%s] Log \'%s\' has been found in container logs', image, wait_log)
 

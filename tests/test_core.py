@@ -17,7 +17,10 @@ class TestDecWrapper(unittest.TestCase):
             DecWrapper('Test', inputs, props)
 
         # THEN
-        self.assertEqual(cm.exception.message, "[Test] : Option 'undefined_prop' doesn't not exist.")
+        self.assertEqual(
+            str(cm.exception),
+            "[Test] : Option 'undefined_prop' doesn't not exist."
+        )
 
     def test__check_inputs_bad_int_type(self):
         # GIVEN
@@ -29,8 +32,10 @@ class TestDecWrapper(unittest.TestCase):
             DecWrapper('Test', inputs, props)
 
         # THEN
-        self.assertEqual(cm.exception.message,
-                         "[Test] : Option 'int_prop' bad type. Expected 'int'. Got 'str' instead.")
+        self.assertEqual(
+            str(cm.exception),
+            "[Test] : Option 'int_prop' bad type. Expected 'int'. Got 'str' instead."
+        )
 
     def test__check_inputs_ok_int_type(self):
         # GIVEN
@@ -45,7 +50,7 @@ class TestDecWrapper(unittest.TestCase):
 
     def test__check_inputs_ok_int_type_alternative(self):
         # GIVEN
-        props = {'int_prop': DwArg(argtype=int, default=1, alternatives=[(str, lambda (i): int(i))])}
+        props = {'int_prop': DwArg(argtype=int, default=1, alternatives=[(str, lambda i: int(i))])}
         inputs = {'int_prop': '5'}
 
         # WHEN
@@ -68,7 +73,7 @@ class TestDecWrapper(unittest.TestCase):
     def test__check_inputs_bad_dict_using_alternative(self):
         # GIVEN
         props = {
-            'dict_prop': DwArg(argtype=dict, alternatives=[([(int, int)], lambda (x): x)], default=dict())
+            'dict_prop': DwArg(argtype=dict, alternatives=[([(int, int)], lambda x: x)], default=dict())
         }
         inputs = {
             'dict_prop': [
@@ -83,7 +88,7 @@ class TestDecWrapper(unittest.TestCase):
 
         # THEN
         self.assertEqual(
-            cm.exception.message,
+            str(cm.exception),
             "[Test] : Option 'dict_prop' bad type. Expected 'dict'. Got 'list' instead."
         )
 
@@ -93,7 +98,7 @@ class TestDecWrapper(unittest.TestCase):
             'dict_prop': DwArg(
                 argtype=dict,
                 alternatives=[
-                    ([(int, int)], lambda (v): dict(i for i in v))
+                    ([(int, int)], lambda v: dict(i for i in v))
                 ],
                 default=dict()
             )
@@ -127,7 +132,7 @@ def dec_function_arg(*args):
 
 
 def dec_function_error():
-    raise StandardError('Error for test')
+    raise RuntimeError('Error for test')
 
 
 class TestDecorated(unittest.TestCase):
@@ -142,7 +147,7 @@ class TestDecorated(unittest.TestCase):
 
         # THEN
         self.assertIsNotNone(output, msg='Output should not be none')
-        self.assertEqual(output.func_name, 'dec_function', msg='Returned function shoud have the same name')
+        self.assertEqual(output.__name__, 'dec_function', msg='Returned function should have the same name')
 
     def test_decorated_without_argument_injection(self):
         # GIVEN
@@ -180,11 +185,15 @@ class TestDecorated(unittest.TestCase):
 
         # WHEN
         f = decorated(wrapping=wrapping_mock, func=dec_function_error)
-        with self.assertRaises(StandardError) as cm:
+        with self.assertRaises(RuntimeError) as cm:
             f()
 
         # THEN
-        self.assertEqual(cm.exception.message, 'Error for test', 'Should be the error raise')
+        self.assertEqual(
+            str(cm.exception),
+            'Error for test',
+            'A error should be raised'
+        )
         wrapping_mock.start.assert_called_once_with()
         wrapping_mock.shutdown.assert_called_once_with()
 

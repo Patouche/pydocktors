@@ -169,8 +169,8 @@ class TestDockerContainer(unittest.TestCase):
 
         docker_container._container = mock.MagicMock()
         docker_container._container.logs.return_value = [
-            'wait once',
-            'wait twice with : "wait for log" present !!'
+            b'wait once',
+            b'wait twice with : "wait for log" present !!'
         ]
 
         # WHEN

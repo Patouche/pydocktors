@@ -1,23 +1,50 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from distutils.core import setup
+import os
+from setuptools import setup, find_packages
 
-with open('README.md') as f:
-    readme = f.read()
 
-with open('LICENSE.txt') as f:
-    license = f.read()
+def get_version():
+    version_content = open('VERSION').readline().strip()
+    if not version_content:
+        raise RuntimeError('Cannot find version if file version_content.')
+    ci_branch = os.getenv('TRAVIS_BRANCH', None)
+    ci_build = os.getenv('TRAVIS_BUILD_NUMBER', None)
+    if ci_build and ci_branch != 'master':
+        version_content = ''.join([version_content, '.', 'dev', ci_build])
+    return version_content
+
+
+user = 'Patouche'
+repository = 'pydocktors'
+version = get_version()
 
 setup(
-    name='docktors',
-    packages=['docktors'],
-    version='0.0.1',
-    description='Decorator for docker',
-    long_description=readme,
+    name=repository,
+    version=version,
+    packages=find_packages(exclude=['it.tests', 'tests', 'examples']),
+    description='Simple docker decorator',
+    long_description=open('README.rst').read(),
     author='Patrick Allain',
     author_email='patralla@gmail.com',
-    url='https://github.com/Patouche/pydoctors',
-    download_url='https://github.com/Patouche/pydoctors/archive/0.0.1.tar.gz',
-    keywords=['docker', 'decorator', 'testing', 'example'],
+    install_requires=[
+        'docker>=2.0.0'
+    ],
+    url='https://github.com/{user}/{repository}'.format(
+        user=user,
+        repository=repository,
+    ),
+    download_url='https://github.com/{user}/{repository}/archive/{version}.tar.gz'.format(
+        user=user,
+        repository=repository,
+        version=version
+    ),
+    keywords=[
+        'docker',
+        'decorator',
+        'testing',
+        'example'
+    ],
     classifiers=[],
-    license=license,
+    license=open('LICENSE').readline().strip(),
 )

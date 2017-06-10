@@ -25,7 +25,7 @@ def decorated(wrapping, func):
             func_args = tuple(wrapping.get_args()) + args if wrapping.inject_arg else args
             return func(*func_args, **kwargs)
         except Exception as e:
-            logger.error('[%s] Error in \'%s\' function : %s', w_name, f_name, e.message)
+            logger.error('[%s] Error in \'%s\' function : %s', w_name, f_name, str(e))
             raise e
         finally:
             logger.debug('[%s] Shutdown after \'%s\' function', w_name, f_name)
@@ -91,7 +91,7 @@ class DecWrapper(object):
         props.update(wrapper_props)
         target_inputs = dict()
 
-        for key, value in inputs.iteritems():
+        for key, value in inputs.items():
             if key not in props:
                 raise SyntaxError("[{name}] : Option '{key}' doesn't not exist.".format(name=name, key=key))
             prop = props[key]
@@ -110,7 +110,7 @@ class DecWrapper(object):
 
             target_inputs[key] = target_value
 
-        all_defaults = [(key, value.default) for key, value in props.iteritems() if value.default is not None]
+        all_defaults = [(key, value.default) for key, value in props.items() if value.default is not None]
         other_defaults = [(key, value) for key, value in all_defaults if key not in target_inputs]
         target_inputs.update(other_defaults)
 

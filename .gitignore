@@ -3,6 +3,7 @@
 .venv/
 .cache/
 *.pyc
+*.swp
 
 ## Test coverage
 cover/
@@ -12,3 +13,7 @@ coverage.xml
 
 # Distribution / packaging
 .tmp
+build/
+dist/
+*.egg-info/
+*.deb
