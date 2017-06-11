@@ -44,14 +44,25 @@ Starting a Nginx with a your content and your configuration::
         wait_for_port=8080,
     )
     def main(container):
-        logger.info('Nginx container with id %s is %s. Visit http://localhost:8080/', container.id, container.status)
+        logger.info(
+            'Nginx container with id %s is %s. Visit http://localhost:8080/',
+            container.id, container.status
+        )
 
 FAQ
 ---
 
-*Why this name ?*
+Why this name ?
+    Because it's the contraction of 3 famous words : *python*, *docker* and *decorators*
 
-Because it's the contraction of 3 famous words : *python*, *docker* and *decorators*
+How did it came from ?
+    It will be a shame if a told you that I didn't take inspiration from other Open Source project...
+    In fact, as a Java developper, I was aware of this 2 projects :
+    - `docker-junit-rule <https://github.com/geowarin/docker-junit-rule>`_
+    - `junit5-docker <https://github.com/FaustXVI/junit5-docker>`_
+    But after some research, I wonder why there was no python decorator already made to run docker in python scripts.
+    So, for my needs, I decided to do one and to share it !
+    I hope that it will be helpful for you to.
 
 **Authors :** Patrick Allain
 **License :** MIT

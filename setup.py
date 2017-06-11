@@ -34,7 +34,7 @@ setup(
         user=user,
         repository=repository,
     ),
-    download_url='https://github.com/{user}/{repository}/archive/{version}.tar.gz'.format(
+    download_url='https://github.com/{user}/{repository}/archive/v{version}.tar.gz'.format(
         user=user,
         repository=repository,
         version=version
