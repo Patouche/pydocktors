@@ -1,42 +1,30 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os
 from setuptools import setup, find_packages
 
-
-def get_version():
-    version_content = open('VERSION').readline().strip()
-    if not version_content:
-        raise RuntimeError('Cannot find version if file version_content.')
-    ci_branch = os.getenv('TRAVIS_BRANCH', None)
-    ci_build = os.getenv('TRAVIS_BUILD_NUMBER', None)
-    if ci_build and ci_branch != 'master':
-        version_content = ''.join([version_content, '.', 'dev', ci_build])
-    return version_content
-
-
-user = 'Patouche'
-repository = 'pydocktors'
-version = get_version()
+authors = ['Patrick Allain']
+github_user = 'Patouche'
+github_repository = 'pydocktors'
+version = open('VERSION').readline().strip()
 
 setup(
-    name=repository,
+    name=github_repository,
     version=version,
     packages=find_packages(exclude=['it.tests', 'tests', 'examples']),
     description='Simple docker decorator',
     long_description=open('README.rst').read(),
-    author='Patrick Allain',
+    author=', '.join(authors),
     author_email='patralla@gmail.com',
     install_requires=[
         'docker>=2.0.0'
     ],
     url='https://github.com/{user}/{repository}'.format(
-        user=user,
-        repository=repository,
+        user=github_user,
+        repository=github_repository,
     ),
-    download_url='https://github.com/{user}/{repository}/archive/{version}.tar.gz'.format(
-        user=user,
-        repository=repository,
+    download_url='https://github.com/{user}/{repository}/archive/v{version}.tar.gz'.format(
+        user=github_user,
+        repository=github_repository,
         version=version
     ),
     keywords=[

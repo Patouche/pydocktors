@@ -28,19 +28,23 @@ jobs:
         - flake8 --config .pycodestyle docktors it.tests tests
       after_success:
         - codecov
+        - version=$(cat VERSION) && echo "$version.dev$TRAVIS_JOB_NUMBER" > VERSION
       deploy:
         provider: pypi
         server: https://testpypi.python.org/pypi
         user: Patouche
         password: $PYPI_PASSWORD
+        skip_upload_docs: true
         on:
           branch: developpment
     - stage: Deploy in PyPi
       script:
-        - git describe --tags --abbrev=0 | sed 's/^v//gi' | tee VERSION
+        - echo "$TRAVIS_TAG" | sed 's/^v//gi' | tee VERSION
       deploy:
         provider: pypi
         user: Patouche
         password: $PYPI_PASSWORD
+        skip_upload_docs: true
       on:
         tags: true
+        all_branches: true
