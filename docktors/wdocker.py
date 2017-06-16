@@ -111,7 +111,7 @@ class DockerContainer(DecWrapper):
                 if wait_log in docker_log.decode('utf-8'):
                     break
             logger.debug('[%s] Log \'%s\' has been found in container logs', image, wait_log)
-    
+
     def _wait_for_port(self):
         wait_port, image, res = self.p('wait_for_port'), self.p('image'), 1
         if wait_port:
