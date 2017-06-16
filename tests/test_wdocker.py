@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
+import signal
 import socket
 import unittest
 
 import mock
-import signal
 
 from docktors.wdocker import DockerContainer
 
@@ -202,7 +202,13 @@ class TestDockerContainer(unittest.TestCase):
             wait_for_port=1234,
         )
 
-        socket_mock.return_value.connect_ex.side_effect = [0, 0, 1]
+        docker_container._client = mock.MagicMock()
+        docker_container._client.containers.get.return_value.attrs = dict(
+            NetworkSettings=dict(IPAddress='172.10.0.2')
+        )
+        docker_container._container = mock.MagicMock(id='c5f0cad13259')
+
+        socket_mock.return_value.connect_ex.side_effect = [1, 1, 0]
 
         # WHEN
         docker_container._wait_for_port()
@@ -210,8 +216,11 @@ class TestDockerContainer(unittest.TestCase):
         # THEN
         time_sleep_mock.assert_called()
         socket_mock.assert_called_with(socket.AF_INET, socket.SOCK_STREAM)
-        socket_mock.return_value.connect_ex.assert_called_with(('127.0.0.1', 1234))
-        self.assertEqual(socket_mock.return_value.connect_ex.call_count, 3, 'Should have been called 3 times')
+        connect_ex_mock = socket_mock.return_value.connect_ex
+        connect_ex_mock.assert_called_with(('172.10.0.2', 1234))
+        self.assertEqual(connect_ex_mock.call_count, 3, 'Should have been called 3 times instead of {call_nb}'.format(
+            call_nb=connect_ex_mock.call_count
+        ))
 
 
 if __name__ == '__main__':

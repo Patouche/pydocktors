@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+import contextlib
 import socket
+from errno import errorcode
+
 import docker
 import logging
 import time
@@ -108,14 +111,19 @@ class DockerContainer(DecWrapper):
                 if wait_log in docker_log.decode('utf-8'):
                     break
             logger.debug('[%s] Log \'%s\' has been found in container logs', image, wait_log)
-
+    
     def _wait_for_port(self):
-        wait_port, image, result = self.p('wait_for_port'), self.p('image'), 0
+        wait_port, image, res = self.p('wait_for_port'), self.p('image'), 1
         if wait_port:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            while result == 0:
-                logger.debug('[%s] Waiting for port %d to respond', image, wait_port)
-                result = sock.connect_ex(('127.0.0.1', wait_port))
-                if result == 0:
-                    time.sleep(1)
-            logger.debug('[%s] Port %d is now responding', image, wait_port)
+            container_id = self._container.id
+            container_info = self._client.containers.get(container_id)
+            ip_address = container_info.attrs['NetworkSettings']['IPAddress']
+            with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
+                while res != 0:
+                    res = sock.connect_ex((ip_address, wait_port))
+                    logger.debug(
+                        '[%s] Waiting for port %d to respond (code:%d => %s).',
+                        image, wait_port, res, errorcode.get(res, '--')
+                    )
+                    time.sleep(0.1 if res != 0 else 0)
+            logger.debug('[%s] Port %d is now responding.', image, wait_port)
