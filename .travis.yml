@@ -38,7 +38,7 @@ jobs:
         skip_upload_docs: true
         skip_cleanup: true
         on:
-          all_branches: true
+          branches: developpment
     - stage: Deploy in PyPi
       only: [master]
       script:
