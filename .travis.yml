@@ -26,6 +26,7 @@ jobs:
         - nosetests -v it.tests tests --with-coverage --cover-erase --cover-package docktors
         - pycodestyle --config .pycodestyle docktors it.tests tests
         - flake8 --config .pycodestyle docktors it.tests tests
+        - pylint --rcfile .pylintrc *.py docktors
       after_success:
         - codecov
         - version=$(cat VERSION) && echo "$version.dev${TRAVIS_JOB_NUMBER%.*}" | tee VERSION

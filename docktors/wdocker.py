@@ -1,42 +1,47 @@
 # -*- coding: utf-8 -*-
+"""
+WDocker module.
+
+This module is design to define the wrapper to use in the generic decorator.
+"""
 import contextlib
 import socket
+import logging
+import time
 from errno import errorcode
 
 import docker
-import logging
-import time
-from .core import DecWrapper, DwArg
+from .core import DecWrapper
 
 logger = logging.getLogger(__name__)
 
 DOCKER_CONTAINER_PROPS = {
-    'image': DwArg(argtype=str, mandatory=True),
-    'command': DwArg(argtype=str),
-    'ports': DwArg(
+    'image': dict(argtype=str, mandatory=True),
+    'command': dict(argtype=str),
+    'ports': dict(
         argtype=dict,
         default=dict(),
         alternatives=[
             ([(int, int)], lambda v: dict(i for i in v))
         ]
     ),
-    'volumes': DwArg(
+    'volumes': dict(
         argtype=dict,
         default=dict(),
         alternatives=[
             ([(str, str, str)], lambda v: dict((i[0], {'bind': i[1], 'mode': i[2]}) for i in v))
         ]
     ),
-    'environment': DwArg(
+    'environment': dict(
         argtype=dict,
         default=dict(),
         alternatives=[
             ([(str, str)], lambda v: dict(i for i in v))
         ]
     ),
-    'wait_for_log': DwArg(argtype=str),
-    'wait_for_port': DwArg(argtype=int),
-    'kill_signal': DwArg(argtype=int),
+    'wait_for_log': dict(argtype=str),
+    'wait_for_port': dict(argtype=int),
+    'kill_signal': dict(argtype=int),
 }
 
 
@@ -51,7 +56,7 @@ class DockerContainer(DecWrapper):
         """
         Class constructor to start and shutdown a container.
         """
-        super(self.__class__, self).__init__(
+        super(DockerContainer, self).__init__(
             name='docker',
             inputs=kwargs,
             props=DOCKER_CONTAINER_PROPS
@@ -99,8 +104,8 @@ class DockerContainer(DecWrapper):
                 else:
                     logger.debug('[%s] Trying to shutdown gracefully container with id : %s', img, cid)
                     self._container.stop(timeout=10)
-        except Exception as e:
-            raise RuntimeError('[%s] Unable to stop container %s ' % (img, cid), e)
+        except Exception as ex:
+            raise RuntimeError('[%s] Unable to stop container %s ' % (img, cid), ex)
 
     def _wait_for_log(self):
         wait_log, image = self.p('wait_for_log'), self.p('image')

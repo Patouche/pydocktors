@@ -3,13 +3,13 @@ import unittest
 
 import mock
 
-from docktors.core import DecWrapper, DwArg, decorated
+from docktors.core import DecWrapper, decorated
 
 
 class TestDecWrapper(unittest.TestCase):
     def test__check_inputs_prop_undefined(self):
         # GIVEN
-        props = {'int_prop': DwArg(argtype=[int], default=1)}
+        props = {'int_prop': dict(argtype=[int], default=1)}
         inputs = {'undefined_prop': 'toto'}
 
         # WHEN
@@ -24,7 +24,7 @@ class TestDecWrapper(unittest.TestCase):
 
     def test__check_inputs_bad_int_type(self):
         # GIVEN
-        props = {'int_prop': DwArg(argtype=int, default=1)}
+        props = {'int_prop': dict(argtype=int, default=1)}
         inputs = {'int_prop': 'toto'}
 
         # WHEN
@@ -39,7 +39,7 @@ class TestDecWrapper(unittest.TestCase):
 
     def test__check_inputs_ok_int_type(self):
         # GIVEN
-        props = {'int_prop': DwArg(argtype=int, default=1)}
+        props = {'int_prop': dict(argtype=int, default=1)}
         inputs = {'int_prop': 5}
 
         # WHEN
@@ -50,7 +50,7 @@ class TestDecWrapper(unittest.TestCase):
 
     def test__check_inputs_ok_int_type_alternative(self):
         # GIVEN
-        props = {'int_prop': DwArg(argtype=int, default=1, alternatives=[(str, lambda i: int(i))])}
+        props = {'int_prop': dict(argtype=int, default=1, alternatives=[(str, lambda i: int(i))])}
         inputs = {'int_prop': '5'}
 
         # WHEN
@@ -61,7 +61,7 @@ class TestDecWrapper(unittest.TestCase):
 
     def test__check_inputs_ok_tuple_list_type(self):
         # GIVEN
-        props = {'tuple_list_prop': DwArg(argtype=[(int, str)], default=list())}
+        props = {'tuple_list_prop': dict(argtype=[(int, str)], default=list())}
         inputs = {'tuple_list_prop': [(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')]}
 
         # WHEN
@@ -73,7 +73,7 @@ class TestDecWrapper(unittest.TestCase):
     def test__check_inputs_bad_dict_using_alternative(self):
         # GIVEN
         props = {
-            'dict_prop': DwArg(argtype=dict, alternatives=[([(int, int)], lambda x: x)], default=dict())
+            'dict_prop': dict(argtype=dict, alternatives=[([(int, int)], lambda x: x)], default=dict())
         }
         inputs = {
             'dict_prop': [
@@ -95,7 +95,7 @@ class TestDecWrapper(unittest.TestCase):
     def test__check_inputs_ok_dict_using_alternative(self):
         # GIVEN
         props = {
-            'dict_prop': DwArg(
+            'dict_prop': dict(
                 argtype=dict,
                 alternatives=[
                     ([(int, int)], lambda v: dict(i for i in v))
@@ -113,7 +113,7 @@ class TestDecWrapper(unittest.TestCase):
 
     def test__check_inputs_set_defaults(self):
         # GIVEN
-        props = {'int_prop': DwArg(argtype=[int], default=1)}
+        props = {'int_prop': dict(argtype=[int], default=1)}
         inputs = {}
 
         # WHEN
