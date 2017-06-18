@@ -11,43 +11,27 @@ sudo: required
 services: [docker]
 
 install: pip install -r requirements.txt
-script:
-  - nosetests -v tests --with-coverage --cover-erase --cover-package docktors
+script: nosetests -v tests --with-coverage --cover-erase --cover-package docktors
 
 jobs:
   include:
     - stage: Integration Test
       only: [master, developpment]
-      install:
-        - sudo service mysql stop
-        - pip install -r requirements.txt
-        - for img in alpine mysql; do docker pull "$img"; done
-      script:
-        - nosetests -v it.tests tests --with-coverage --cover-erase --cover-package docktors
-        - pycodestyle --config .pycodestyle docktors it.tests tests
-        - flake8 --config .pycodestyle docktors it.tests tests
-        - pylint --rcfile .pylintrc *.py docktors
-      after_success:
-        - codecov
-        - version=$(cat VERSION) && echo "$version.dev${TRAVIS_JOB_NUMBER%.*}" | tee VERSION
-      deploy:
-        provider: pypi
-        server: https://testpypi.python.org/pypi
-        user: Patouche
-        password: $PYPI_PASSWORD
-        skip_upload_docs: true
-        skip_cleanup: true
-        on:
-          branches: developpment
+      script: .ci/integ-tests.sh
     - stage: Deploy in PyPi
-      only: [master]
+      only: [master, developpment]
+      env:
       script:
-        - echo "$TRAVIS_TAG" | sed 's/^v//gi' | tee VERSION
+        - export PYPI_SERVER=testpypi
+        - test $TRAVIS_BRANCH != 'master' && v=$(cat VERSION) && echo "${v}.dev${TRAVIS_JOB_NUMBER%.*}" > VERSION || true
+        - test $TRAVIS_BRANCH = 'master' && export PYPI_SERVER=pypi || true
+        - test $TRAVIS_BRANCH = 'master' && .ci/release.sh || true
       deploy:
         provider: pypi
+        server: https://${PYPI_SERVER}.python.org/pypi
         user: Patouche
         password: $PYPI_PASSWORD
         skip_upload_docs: true
         skip_cleanup: true
         on:
-          tags: true
+          all_branches: true

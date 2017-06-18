@@ -15,7 +15,7 @@ GITHUB = dict(
 VERSION = open('VERSION').readline().strip()
 
 setup(
-    name=GITHUB['user'],
+    name=GITHUB['repository'],
     version=VERSION,
     packages=find_packages(exclude=['it.tests', 'tests', 'examples']),
     description='Simple docker decorator',
