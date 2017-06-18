@@ -20,7 +20,6 @@ jobs:
       script: .ci/integ-tests.sh
     - stage: Deploy in PyPi
       only: [master, developpment]
-      env:
       script:
         - export PYPI_SERVER=testpypi
         - test $TRAVIS_BRANCH != 'master' && v=$(cat VERSION) && echo "${v}.dev${TRAVIS_JOB_NUMBER%.*}" > VERSION || true
