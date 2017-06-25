@@ -46,9 +46,9 @@ class DecWrapper(object):
     Decorator wrapper class for parsing inputs args of any type of decorator.
     """
 
-    _global_props = {
-        'inject_arg': dict(argtype=bool, default=False),
-    }
+    _global_props = dict(
+        inject_arg=dict(argtype=bool, default=False),
+    )
 
     def __init__(self, name, inputs, props):
         self._inputs = self.__check_inputs(name, inputs, props)
@@ -101,6 +101,10 @@ class DecWrapper(object):
         props = dict(self._global_props)
         props.update(wrapper_props)
         target_inputs = dict()
+
+        for prop_name, prop_def in props.items():
+            if prop_def.get('mandatory', False) and prop_name not in inputs:
+                raise SyntaxError("[{name}] : Mandatory option '{key}' is missing.".format(name=name, key=prop_name))
 
         for key, value in inputs.items():
             if key not in props:

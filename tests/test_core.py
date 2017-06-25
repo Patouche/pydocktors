@@ -7,6 +7,21 @@ from docktors.core import DecWrapper, decorated
 
 
 class TestDecWrapper(unittest.TestCase):
+    def test__check_inputs_mandatory_arg_missing(self):
+        # GIVEN
+        props = dict(str_prop=dict(argtype=[str], mandatory=True))
+        inputs = dict(other_prop='value')
+
+        # WHEN
+        with self.assertRaises(SyntaxError) as cm:
+            DecWrapper('Test', inputs, props)
+
+        # THEN
+        self.assertEqual(
+            str(cm.exception),
+            "[Test] : Mandatory option 'str_prop' is missing."
+        )
+
     def test__check_inputs_prop_undefined(self):
         # GIVEN
         props = {'int_prop': dict(argtype=[int], default=1)}
