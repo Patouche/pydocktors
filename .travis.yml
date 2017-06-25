@@ -18,13 +18,15 @@ jobs:
     - stage: Integration Test
       only: [master, developpment]
       script: .ci/integ-tests.sh
+    - stage: Github Release
+      only: [master]
+      script: .ci/release.sh
     - stage: Deploy in PyPi
       only: [master, developpment]
       script:
-        - export PYPI_SERVER=testpypi
-        - test $TRAVIS_BRANCH != 'master' && v=$(cat VERSION) && echo "${v}.dev${TRAVIS_JOB_NUMBER%.*}" > VERSION || true
-        - test $TRAVIS_BRANCH = 'master' && export PYPI_SERVER=pypi || true
-        - test $TRAVIS_BRANCH = 'master' && .ci/release.sh || true
+        - export LIB_VERSION=$(cat VERSION)
+        - test $TRAVIS_BRANCH = 'master' && export PYPI_SERVER=pypi || export PYPI_SERVER=testpypi
+        - test $TRAVIS_BRANCH != 'master' && echo "${LIB_VERSION}.dev${TRAVIS_JOB_NUMBER%.*}" > VERSION || true
       deploy:
         provider: pypi
         server: https://${PYPI_SERVER}.python.org/pypi
