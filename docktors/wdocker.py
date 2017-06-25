@@ -15,34 +15,34 @@ from .core import DecWrapper
 
 logger = logging.getLogger(__name__)
 
-DOCKER_CONTAINER_PROPS = {
-    'image': dict(argtype=str, mandatory=True),
-    'command': dict(argtype=str),
-    'ports': dict(
+DOCKER_CONTAINER_PROPS = dict(
+    image=dict(argtype=str, mandatory=True),
+    command=dict(argtype=str),
+    ports=dict(
         argtype=dict,
         default=dict(),
         alternatives=[
             ([(int, int)], lambda v: dict(i for i in v))
         ]
     ),
-    'volumes': dict(
+    volumes=dict(
         argtype=dict,
         default=dict(),
         alternatives=[
             ([(str, str, str)], lambda v: dict((i[0], {'bind': i[1], 'mode': i[2]}) for i in v))
         ]
     ),
-    'environment': dict(
+    environment=dict(
         argtype=dict,
         default=dict(),
         alternatives=[
             ([(str, str)], lambda v: dict(i for i in v))
         ]
     ),
-    'wait_for_log': dict(argtype=str),
-    'wait_for_port': dict(argtype=int),
-    'kill_signal': dict(argtype=int),
-}
+    wait_for_log=dict(argtype=str),
+    wait_for_port=dict(argtype=int),
+    kill_signal=dict(argtype=int),
+)
 
 
 class DockerContainer(DecWrapper):
