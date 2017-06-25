@@ -1,6 +1,7 @@
 # IDE & Virtualenv
 .idea/
 .venv/
+.venv*/
 .cache/
 *.pyc
 *.swp

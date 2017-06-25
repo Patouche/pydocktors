@@ -95,22 +95,33 @@ class DecWrapper(object):
         raise NotImplementedError("Abstract method should be implemented")
 
     def __check_inputs(self, name, inputs, wrapper_props):
-        """
-        Test input arguments
-        """
+        """ Test input arguments """
         props = dict(self._global_props)
         props.update(wrapper_props)
-        target_inputs = dict()
 
         for prop_name, prop_def in props.items():
             if prop_def.get('mandatory', False) and prop_name not in inputs:
                 raise SyntaxError("[{name}] : Mandatory option '{key}' is missing.".format(name=name, key=prop_name))
+
+        target_inputs = DecWrapper.__check_user_inputs(name, inputs, props)
+
+        logger.debug('[%s] Input args : %s', name, target_inputs)
+        return target_inputs
+
+    @staticmethod
+    def __check_user_inputs(name, inputs, props):
+        """Check user inputs"""
+
+        default_inputs = [(k, v.get('default')) for k, v in props.items() if v.get('default') is not None]
+
+        target_inputs = dict(default_inputs)
 
         for key, value in inputs.items():
             if key not in props:
                 raise SyntaxError("[{name}] : Option '{key}' doesn't not exist.".format(name=name, key=key))
             prop = props[key]
 
+            # Check for alternative definition of parameters
             alternatives = prop.get('alternatives', [])
             alt_func = next((alt[1] for alt in alternatives if DecWrapper.__is_type(name, value, alt[0])), None)
             target_value = alt_func(value) if alt_func else value
@@ -126,11 +137,6 @@ class DecWrapper(object):
 
             target_inputs[key] = target_value
 
-        all_defaults = [(key, value.get('default')) for key, value in props.items() if value.get('default') is not None]
-        other_defaults = [(key, value) for key, value in all_defaults if key not in target_inputs]
-        target_inputs.update(other_defaults)
-
-        logger.debug('[%s] Input args : %s', name, target_inputs)
         return target_inputs
 
     def param(self, item):
