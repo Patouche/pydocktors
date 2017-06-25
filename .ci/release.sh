@@ -7,7 +7,6 @@ ROOT_DIR=$(readlink -f $(dirname $(dirname $0)))
 TARGET_BRANCH=master
 ENCRYPTION_UUID='fcfd164fbc57'
 
-
 function get_version() {
    cat "${ROOT_DIR}/VERSION"
 }
@@ -33,11 +32,10 @@ function ssh_agent() {
     ssh-add -l
 }
 
-
 VERSION=$(get_version)
-git_configure
+test $CI == true && ssh_agent || echo 'Skip ssh agent configuration'
+test $CI == true && git_configure || echo 'Skip git configuration'
 git clean -df
 git checkout master
 git tag -a "v${VERSION}" -m "Version ${VERSION}"
-ssh_agent
 git push --tags

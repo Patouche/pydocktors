@@ -16,23 +16,29 @@ script: nosetests -v tests --with-coverage --cover-erase --cover-package docktor
 jobs:
   include:
     - stage: Integration Test
-      only: [master, developpment]
+      branches:
+        only: [master, developpment]
       script: .ci/integ-tests.sh
     - stage: Github Release
-      only: [master]
-      script: .ci/release.sh
+      branches:
+        only: [master]
+      install: skip
+      script: if [[ "$TRAVIS_BRANCH" == "master" ]]; then .ci/release.sh; fi
     - stage: Deploy in PyPi
-      only: [master, developpment]
+      branches:
+        only: [master, developpment]
       script:
         - export LIB_VERSION=$(cat VERSION)
-        - test $TRAVIS_BRANCH = 'master' && export PYPI_SERVER=pypi || export PYPI_SERVER=testpypi
-        - test $TRAVIS_BRANCH != 'master' && echo "${LIB_VERSION}.dev${TRAVIS_JOB_NUMBER%.*}" > VERSION || true
+        - if [[ "$TRAVIS_BRANCH" == "master" ]]; then export PYPI_SERVER=upload; fi
+        - if [[ "$TRAVIS_BRANCH" == "developpment" ]]; then export PYPI_SERVER=test; fi
+        - if [[ "$TRAVIS_BRANCH" != "master" ]]; then echo "${LIB_VERSION}.dev${TRAVIS_JOB_NUMBER%.*}" > VERSION; fi
       deploy:
         provider: pypi
-        server: https://${PYPI_SERVER}.python.org/pypi
+        server: https://${PYPI_SERVER}.pypi.org/legacy/
         user: Patouche
         password: $PYPI_PASSWORD
         skip_upload_docs: true
         skip_cleanup: true
         on:
           all_branches: true
+          condition: "! -z $PYPI_SERVER"

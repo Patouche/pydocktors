@@ -8,10 +8,10 @@ import contextlib
 import socket
 import logging
 import time
+import errno
 from errno import errorcode
 
 import docker
-import errno
 
 from .core import DecWrapper
 

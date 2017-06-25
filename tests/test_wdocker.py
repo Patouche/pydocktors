@@ -249,6 +249,12 @@ class TestDockerContainer(unittest.TestCase):
             docker_container._wait_for_port()
 
         # THEN
+        expected_message = '\n'.join([
+            '[alpine] Host 172.10.0.2 cannot be reach. The container may exit abnormally. Container logs :',
+            'some container error ...',
+            'container failed to start'
+        ])
+        self.assertEquals(str(cm.exception), expected_message, 'Message should be explicit: %s' % expected_message)
         time_sleep_mock.assert_called()
         socket_mock.assert_called_with(socket.AF_INET, socket.SOCK_STREAM)
         connect_ex_mock = socket_mock.return_value.connect_ex

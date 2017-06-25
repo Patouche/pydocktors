@@ -8,14 +8,18 @@ IMG_INTEG_TESTS=(
     'mysql'
     'alpine'
 )
+COMMANDS=(
+    'sudo service mysql stop'
+    'pip install -qr requirements.txt'
+    'for img in "${IMG_INTEG_TESTS[@]}"; do docker pull "$img"; done'
+    'nosetests -v it.tests tests --with-coverage --cover-erase --cover-package docktors'
+    'pycodestyle --config .pycodestyle docktors it.tests tests'
+    'flake8 --config .pycodestyle docktors it.tests tests'
+    'pylint --rcfile .pylintrc *.py docktors'
+    'test $CI == true && codecov || echo "Skipping test coverage"'
+)
 
-sudo service mysql stop
-pip install -qr requirements.txt
-for img in "${IMG_INTEG_TESTS[@]}"; do docker pull "$img"; done
-nosetests -v it.tests tests --with-coverage --cover-erase --cover-package docktors
-pycodestyle --config .pycodestyle docktors it.tests tests
-flake8 --config .pycodestyle docktors it.tests tests
-pylint --rcfile .pylintrc *.py docktors
-codecov
-
-
+for cmd in "${COMMANDS[@]}"; do
+    echo "Running : ${cmd}"
+    eval "${cmd}"
+done
