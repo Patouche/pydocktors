@@ -11,6 +11,8 @@ import time
 from errno import errorcode
 
 import docker
+import errno
+
 from .core import DecWrapper
 
 logger = logging.getLogger(__name__)
@@ -43,6 +45,11 @@ DOCKER_CONTAINER_PROPS = dict(
     wait_for_port=dict(argtype=int),
     kill_signal=dict(argtype=int),
 )
+
+
+class DockerContainerError(Exception):
+    """Exception for docker container"""
+    pass
 
 
 class DockerContainer(DecWrapper):
@@ -86,6 +93,8 @@ class DockerContainer(DecWrapper):
         logger.debug('[%s] container start with id : %s', image, self._container.id)
         self._wait_for_log()
         self._wait_for_port()
+        logger.debug('[%s] reloading container %s', image, self._container.id)
+        self._container.reload()
         logger.debug('[%s] container is ready (id=%s)', image, self._container.id)
         return self._container
 
@@ -105,7 +114,7 @@ class DockerContainer(DecWrapper):
                     logger.debug('[%s] Trying to shutdown gracefully container with id : %s', img, cid)
                     self._container.stop(timeout=10)
         except Exception as ex:
-            raise RuntimeError('[%s] Unable to stop container %s ' % (img, cid), ex)
+            raise DockerContainerError('[%s] Unable to stop container %s ' % (img, cid), ex)
 
     def _wait_for_log(self):
         wait_log, image = self.p('wait_for_log'), self.p('image')
@@ -123,6 +132,11 @@ class DockerContainer(DecWrapper):
             container_id = self._container.id
             container_info = self._client.containers.get(container_id)
             ip_address = container_info.attrs['NetworkSettings']['IPAddress']
+            unsupported_errors = [
+                (errno.EHOSTUNREACH,
+                 '[{image}] Host {ip} cannot be reach. The container may exit abnormally. Container logs :\n{logs}')
+            ]
+
             with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
                 while res != 0:
                     res = sock.connect_ex((ip_address, wait_port))
@@ -130,5 +144,15 @@ class DockerContainer(DecWrapper):
                         '[%s] Waiting for port %d to respond (code:%d => %s).',
                         image, wait_port, res, errorcode.get(res, '--')
                     )
+                    unsupported_error = next((e[1] for e in unsupported_errors if e[0] == res), None)
+                    if unsupported_error:
+                        raise DockerContainerError(unsupported_error.format(
+                            image=image,
+                            port=wait_port,
+                            signal=errorcode.get(res, '--'),
+                            ip=ip_address,
+                            logs=self._container.logs(stream=False).decode('utf-8')
+                        ))
+
                     time.sleep(0.1 if res != 0 else 0)
             logger.debug('[%s] Port %d is now responding.', image, wait_port)

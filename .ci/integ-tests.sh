@@ -4,7 +4,6 @@ set -e
 
 # Constants
 ROOT_DIR=$(readlink -f $(dirname $(dirname $0)))
-TARGET_BRANCH=master
 IMG_INTEG_TESTS=(
     'mysql'
     'alpine'
@@ -18,3 +17,5 @@ pycodestyle --config .pycodestyle docktors it.tests tests
 flake8 --config .pycodestyle docktors it.tests tests
 pylint --rcfile .pylintrc *.py docktors
 codecov
+
+

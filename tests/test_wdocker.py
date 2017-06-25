@@ -3,9 +3,10 @@ import signal
 import socket
 import unittest
 
+import errno
 import mock
 
-from docktors.wdocker import DockerContainer
+from docktors.wdocker import DockerContainer, DockerContainerError
 
 
 class TestDockerContainer(unittest.TestCase):
@@ -218,6 +219,41 @@ class TestDockerContainer(unittest.TestCase):
         socket_mock.assert_called_with(socket.AF_INET, socket.SOCK_STREAM)
         connect_ex_mock = socket_mock.return_value.connect_ex
         connect_ex_mock.assert_called_with(('172.10.0.2', 1234))
+        self.assertEqual(connect_ex_mock.call_count, 3, 'Should have been called 3 times instead of {call_nb}'.format(
+            call_nb=connect_ex_mock.call_count
+        ))
+
+    @mock.patch(target='socket.socket')
+    @mock.patch(target='time.sleep')
+    def test__wait_for_port_with_unsupported_errors(self, time_sleep_mock, socket_mock):
+        # GIVEN
+        docker_container = DockerContainer(
+            image='alpine',
+            wait_for_port=1234,
+        )
+
+        docker_container._client = mock.MagicMock()
+        docker_container._client.containers.get.return_value.attrs = dict(
+            NetworkSettings=dict(IPAddress='172.10.0.2')
+        )
+        docker_container._container = mock.MagicMock(id='c5f0cad13259')
+        docker_container._container.logs.return_value = b'\n'.join([
+            b'some container error ...',
+            b'container failed to start'
+        ])
+
+        socket_mock.return_value.connect_ex.side_effect = [1, 1, errno.EHOSTUNREACH]
+
+        # WHEN
+        with self.assertRaises(DockerContainerError) as cm:
+            docker_container._wait_for_port()
+
+        # THEN
+        time_sleep_mock.assert_called()
+        socket_mock.assert_called_with(socket.AF_INET, socket.SOCK_STREAM)
+        connect_ex_mock = socket_mock.return_value.connect_ex
+        connect_ex_mock.assert_called_with(('172.10.0.2', 1234))
+        docker_container._container.logs.assert_called_once_with(stream=False)
         self.assertEqual(connect_ex_mock.call_count, 3, 'Should have been called 3 times instead of {call_nb}'.format(
             call_nb=connect_ex_mock.call_count
         ))
