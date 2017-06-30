@@ -3,6 +3,8 @@ import docker
 import logging
 import signal
 
+from docker.models.containers import Container
+
 import docktors
 
 logging.basicConfig(format='%(asctime)-15s %(clientip)s %(user)-8s %(message)s', level=logging.DEBUG)
@@ -127,6 +129,16 @@ class DockerTest(unittest.TestCase):
 
         # THEN
         self.assertTrue(output, 'Check container has been injected')
+
+    @docktors.docker(
+        inject_arg=True,
+        image='alpine',
+        command='sh'
+    )
+    def test_container_injection_at_first_in_class(self, container):
+
+        # THEN
+        self.assertIsInstance(container, Container)
 
 
 if __name__ == '__main__':
