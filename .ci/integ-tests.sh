@@ -13,8 +13,8 @@ COMMANDS=(
     'pip install -qr requirements.txt'
     'for img in "${IMG_INTEG_TESTS[@]}"; do docker pull "$img"; done'
     'nosetests -v it_tests tests --with-coverage --cover-erase --cover-package docktors'
-    'pycodestyle --config .pycodestyle docktors it.tests tests'
-    'flake8 --config .pycodestyle docktors it.tests tests'
+    'pycodestyle --config .pycodestyle docktors it_tests tests'
+    'flake8 --config .pycodestyle docktors it_tests tests'
     'pylint --rcfile .pylintrc *.py docktors'
     'test $CI == true && codecov || echo "Skipping test coverage"'
 )
