@@ -40,7 +40,7 @@ def alpine(func):
     wait_for_log='mysqld: ready for connections',
     kill_signal=signal.SIGKILL,
 )
-def mysql_container_for_log(container, func):
+def mysql_container_for_log(func, container):
     return func(container)
 
 
@@ -59,7 +59,7 @@ def mysql_container_for_log(container, func):
     wait_for_port=3306,
     kill_signal=signal.SIGKILL,
 )
-def mysql_container_for_port(container, func):
+def mysql_container_for_port(func, container):
     return func(container)
 
 
@@ -119,7 +119,7 @@ class DockerTest(unittest.TestCase):
         # THEN
         self.assertTrue(output, 'Should wait until port is open')
 
-    def test_container_injection_at_first(self):
+    def test_container_injection_at_end(self):
         # GIVEN
         def _mysql_query(container):
             return container is not None
@@ -135,7 +135,7 @@ class DockerTest(unittest.TestCase):
         image='alpine',
         command='sh'
     )
-    def test_container_injection_at_first_in_class(self, container):
+    def test_container_injection_at_nd_in_class(self, container):
 
         # THEN
         self.assertIsInstance(container, Container)

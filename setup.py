@@ -17,7 +17,7 @@ VERSION = open('VERSION').readline().strip()
 setup(
     name=GITHUB['repository'],
     version=VERSION,
-    packages=find_packages(exclude=['it.tests', 'tests', 'examples']),
+    packages=find_packages(exclude=['it_tests', 'tests', 'examples']),
     description='Simple docker decorator',
     long_description=open('README.rst').read(),
     author=', '.join(AUTHORS.values()),

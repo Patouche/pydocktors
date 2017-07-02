@@ -29,7 +29,7 @@ def decorated(wrapping, func):
         wrapping.start()
         try:
             logger.debug('[%s] Executing \'%s\' function', w_name, f_name)
-            func_args = tuple(wrapping.get_args()) + args if wrapping.inject_arg else args
+            func_args = args + tuple(wrapping.get_args()) if wrapping.inject_arg else args
             return func(*func_args, **kwargs)
         except Exception as ex:
             logger.error('[%s] Error in \'%s\' function : %s', w_name, f_name, str(ex))

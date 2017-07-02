@@ -18,6 +18,7 @@ mysql_docker = docktors.docker(
 
 
 class TestMain(unittest.TestCase):
+
     @mysql_docker
     def test_main(self, container):
         ip = container.attrs['NetworkSettings']['IPAddress']

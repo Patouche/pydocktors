@@ -188,8 +188,8 @@ class TestDecorated(unittest.TestCase):
 
         # THEN
         self.assertIsInstance(output, tuple, 'Should retrieve function arguments')
-        self.assertEqual(output[0], 'First arg', 'Function first output should be the wrapping args')
-        self.assertEqual(output[1], 'Hello World', 'Function second output should be the argument parameter')
+        self.assertEqual(output[0], 'Hello World', 'Function second output should be the argument parameter')
+        self.assertEqual(output[1], 'First arg', 'Function first output should be the wrapping args')
         wrapping_mock.start.assert_called_once_with()
         wrapping_mock.shutdown.assert_called_once_with()
 
